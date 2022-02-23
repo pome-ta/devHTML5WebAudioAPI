@@ -14,3 +14,7 @@ app.listen(port, () => {
   console.log(`Launching app... http://localhost:${port}` + '\n');
   //console.log({app});
 });
+
+
+// Register app. Required for better performance when running from play.js
+try { pjs.register(app); } catch (error) { }
