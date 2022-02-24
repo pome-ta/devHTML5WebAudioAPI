@@ -6,7 +6,7 @@ const actx = new AudioContext();
 const osc = actx.createOscillator();
 osc.connect(actx.destination);
 osc.start();
-console.log('おわり');
+
 
 
 // 着火のおまじない
