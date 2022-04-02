@@ -1,11 +1,13 @@
 //import {callSineWava} from './waveGenerator.js';
 
-// 着火のおまじない
-const eventName = typeof document.ontouchend !== 'undefined' ? 'touchend' : 'mouseup';
-document.addEventListener(eventName, initAudioContext);
 
+
+const tapStart = typeof document.ontouchstart !== 'undefined' ? 'touchstart' : 'mousedown';
+const tapEnd = typeof document.ontouchend !== 'undefined' ? 'touchend' : 'mouseup';
+document.addEventListener(tapEnd, initAudioContext);
+// 着火のおまじない
 function initAudioContext(){
-  document.removeEventListener(eventName, initAudioContext);
+  document.removeEventListener(tapEnd, initAudioContext);
   // wake up AudioContext
   //console.log('wake up');
   actx.resume();
@@ -13,13 +15,17 @@ function initAudioContext(){
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const actx = new AudioContext();
+let osc;
+let isPlay = false;
+
 
 // 波形(ここでは簡単にするために sine 波形)
 const buffer = new Float32Array(2048);
 
-for(let i = 0; i < buffer.length; ++i) {
+for(let i = 0; i < buffer.length; i++) {
   buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
 }
+console.log(buffer);
 
 // 離散フーリエ変換で倍音構成に変換
 const fdata = fft(buffer);
@@ -37,13 +43,13 @@ function fft(input) {
     let cos = Math.cos;
     let sin = Math.sin;
 
-    for(i = 0; i < n; ++i) {
+    for(i = 0; i < n; i++) {
         ar[i] = input[i];
     }
 
     // scrambler
     i = 0;
-    for(j=1; j<n-1; ++j) {
+    for(j = 1; j < n - 1; ++j) {
         for(k = n>>1; k>(i ^= k); k>>=1);
         if(j<i) {
             xr = ar[j];
@@ -54,7 +60,7 @@ function fft(input) {
             ai[i] = xi;
         }
     }
-    for(mh=1; (m = mh << 1) <= n; mh=m) {
+    for(mh = 1; (m = mh << 1) <= n; mh = m) {
         irev = 0;
         for(i=0; i<n; i+=m) {
             wr = cos(theta * irev);
@@ -79,12 +85,28 @@ function fft(input) {
     return [ar, ai];
 }
 
+document.addEventListener('DOMContentLoaded', callStart);
 
-console.log('play');
-const osc = actx.createOscillator();
-osc.setPeriodicWave(periodic);
-osc.connect(actx.destination);
-osc.start();
+function callStart() {
+  osc = actx.createOscillator();
+  osc.setPeriodicWave(periodic);
+  osc.connect(actx.destination);
+  osc.start();
+  isPlay = false;
+}
+
+function callStop() {
+  osc?.stop();
+  isPlay = true;
+}
+
+
+
+document.addEventListener(tapStart, () => {
+  (isPlay) ? callStart() : callStop();
+});
+
+
 //osc.stop(actx.currentTime + 3.0);
 
 /*
