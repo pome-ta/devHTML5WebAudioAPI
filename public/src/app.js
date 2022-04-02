@@ -7,6 +7,7 @@ document.addEventListener(eventName, initAudioContext);
 function initAudioContext(){
   document.removeEventListener(eventName, initAudioContext);
   // wake up AudioContext
+  //console.log('wake up');
   actx.resume();
 }
 
@@ -15,8 +16,9 @@ const actx = new AudioContext();
 
 // 波形(ここでは簡単にするために sine 波形)
 const buffer = new Float32Array(2048);
-for(let i = 0, l = buffer.length; ++i) {
-    buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
+
+for(let i = 0; i < buffer.length; ++i) {
+  buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
 }
 
 // 離散フーリエ変換で倍音構成に変換
@@ -77,16 +79,26 @@ function fft(input) {
     return [ar, ai];
 }
 
-function play() {
+
 console.log('play');
 const osc = actx.createOscillator();
 osc.setPeriodicWave(periodic);
 osc.connect(actx.destination);
-osc.start(actx.currentTime);
-osc.stop(actx.currentTime + 3.0);
-}
+osc.start();
+//osc.stop(actx.currentTime + 3.0);
 
-document.addEventListener(eventName, play);
+/*
+function play() {
+  console.log('play');
+  const osc = actx.createOscillator();
+  osc.setPeriodicWave(periodic);
+  osc.connect(actx.destination);
+  osc.start();
+  osc.stop(actx.currentTime + 3.0);
+}
+*/
+
+//document.addEventListener(eventName, play);
 
 
 
@@ -123,6 +135,7 @@ const osc = actx.createOscillator();
 osc.connect(actx.destination);
 osc.start();
 */
+
 /*
 
 const REAL_TIME_FREQUENCY = 440.0;
