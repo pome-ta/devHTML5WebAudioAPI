@@ -13,6 +13,84 @@ function initAudioContext(){
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const actx = new AudioContext();
 
+// 波形(ここでは簡単にするために sine 波形)
+const buffer = new Float32Array(2048);
+for(let i = 0, l = buffer.length; ++i) {
+    buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
+}
+
+// 離散フーリエ変換で倍音構成に変換
+const fdata = fft(buffer);
+
+// PeriodicWave を作る
+const periodic = actx.createPeriodicWave(...fdata);
+
+// 離散フーリエ変換をする函数
+function fft(input) {
+    let n = input.length;
+    let theta = 2 * Math.PI / n;
+    let ar = new Float32Array(n);
+    let ai = new Float32Array(n);
+    let m, mh, i, j, k, irev, wr, wi, xr, xi;
+    let cos = Math.cos;
+    let sin = Math.sin;
+
+    for(i = 0; i < n; ++i) {
+        ar[i] = input[i];
+    }
+
+    // scrambler
+    i = 0;
+    for(j=1; j<n-1; ++j) {
+        for(k = n>>1; k>(i ^= k); k>>=1);
+        if(j<i) {
+            xr = ar[j];
+            xi = ai[j];
+            ar[j] = ar[i];
+            ai[j] = ai[i];
+            ar[i] = xr;
+            ai[i] = xi;
+        }
+    }
+    for(mh=1; (m = mh << 1) <= n; mh=m) {
+        irev = 0;
+        for(i=0; i<n; i+=m) {
+            wr = cos(theta * irev);
+            wi = sin(theta * irev);
+            for(k=n>>2; k > (irev ^= k); k>>=1);
+            for(j=i; j<mh+i; ++j) {
+                k = j + mh;
+                xr = ar[j] - ar[k];
+                xi = ai[j] - ai[k];
+                ar[j] += ar[k];
+                ai[j] += ai[k];
+                ar[k] = wr * xr - wi * xi;
+                ai[k] = wr * xi + wi * xr;
+            }
+        }
+    }
+
+    // remove DC offset
+    ar[0] = 0;
+    ar[0] = 0;
+
+    return [ar, ai];
+}
+
+function play() {
+console.log('play');
+const osc = actx.createOscillator();
+osc.setPeriodicWave(periodic);
+osc.connect(actx.destination);
+osc.start(actx.currentTime);
+osc.stop(actx.currentTime + 3.0);
+}
+
+document.addEventListener(eventName, play);
+
+
+
+
 
 /*
 const createWave = (func, duration) => {
@@ -45,7 +123,7 @@ const osc = actx.createOscillator();
 osc.connect(actx.destination);
 osc.start();
 */
-
+/*
 
 const REAL_TIME_FREQUENCY = 440.0;
 const ANGULAR_FREQUENCY = REAL_TIME_FREQUENCY * 2 * Math.PI;
@@ -79,4 +157,4 @@ function update(timestamp) {
 }
 requestAnimationFrame(update);
 
-
+*/
