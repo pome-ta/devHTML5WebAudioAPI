@@ -1,31 +1,39 @@
 //import {callSineWava} from './waveGenerator.js';
 
+// 着火のおまじない
+function initAudioContext(){
+  document.removeEventListener(tapEnd, initAudioContext);
+  // wake up AudioContext
+  actx.resume();
+}
 
 
 const tapStart = typeof document.ontouchstart !== 'undefined' ? 'touchstart' : 'mousedown';
 const tapEnd = typeof document.ontouchend !== 'undefined' ? 'touchend' : 'mouseup';
 document.addEventListener(tapEnd, initAudioContext);
-// 着火のおまじない
-function initAudioContext(){
-  document.removeEventListener(tapEnd, initAudioContext);
-  // wake up AudioContext
-  //console.log('wake up');
-  actx.resume();
-}
+
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const actx = new AudioContext();
 let osc;
 let isPlay = false;
 
-
-// 波形(ここでは簡単にするために sine 波形)
 const buffer = new Float32Array(2048);
 
-for(let i = 0; i < buffer.length; i++) {
-  buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
+function waveFunc(x) {
+//console.log(x);
+  const xt = x / 2048;
+  return Math.sin(Math.PI * 2 * xt) * (xt - Math.floor(xt));
 }
+
+
+for(let i = 0; i < buffer.length; i++) {
+  //buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
+  buffer[i] = waveFunc(i);
+}
+
 console.log(buffer);
+
 
 // 離散フーリエ変換で倍音構成に変換
 const fdata = fft(buffer);
@@ -84,8 +92,6 @@ function fft(input) {
 
     return [ar, ai];
 }
-
-document.addEventListener('DOMContentLoaded', callStart);
 
 function callStart() {
   osc = actx.createOscillator();
