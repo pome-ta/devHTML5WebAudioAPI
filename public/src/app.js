@@ -1,17 +1,17 @@
 //import {callSineWava} from './waveGenerator.js';
 
 // 着火のおまじない
-function initAudioContext(){
+function initAudioContext() {
   document.removeEventListener(tapEnd, initAudioContext);
   // wake up AudioContext
   actx.resume();
 }
 
-
-const tapStart = typeof document.ontouchstart !== 'undefined' ? 'touchstart' : 'mousedown';
-const tapEnd = typeof document.ontouchend !== 'undefined' ? 'touchend' : 'mouseup';
+const tapStart =
+  typeof document.ontouchstart !== 'undefined' ? 'touchstart' : 'mousedown';
+const tapEnd =
+  typeof document.ontouchend !== 'undefined' ? 'touchend' : 'mouseup';
 document.addEventListener(tapEnd, initAudioContext);
-
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const actx = new AudioContext();
@@ -21,19 +21,18 @@ let isPlay = false;
 const buffer = new Float32Array(2048);
 
 function waveFunc(x) {
-//console.log(x);
+  //console.log(x);
   const xt = x / 2048;
-  return Math.sin(Math.PI * 2 * xt) * (xt - Math.floor(xt));
+  //return Math.sin(Math.PI * 2 * xt) * (xt - Math.floor(xt));
+  return Math.sin(Math.PI * 2 * xt * (xt - Math.floor(xt)));
 }
 
-
-for(let i = 0; i < buffer.length; i++) {
+for (let i = 0; i < buffer.length; i++) {
   //buffer[i] = Math.sin(Math.PI * 2 * i / 2048);
   buffer[i] = waveFunc(i);
 }
 
 console.log(buffer);
-
 
 // 離散フーリエ変換で倍音構成に変換
 const fdata = fft(buffer);
@@ -43,54 +42,54 @@ const periodic = actx.createPeriodicWave(...fdata);
 
 // 離散フーリエ変換をする函数
 function fft(input) {
-    let n = input.length;
-    let theta = 2 * Math.PI / n;
-    let ar = new Float32Array(n);
-    let ai = new Float32Array(n);
-    let m, mh, i, j, k, irev, wr, wi, xr, xi;
-    let cos = Math.cos;
-    let sin = Math.sin;
+  let n = input.length;
+  let theta = (2 * Math.PI) / n;
+  let ar = new Float32Array(n);
+  let ai = new Float32Array(n);
+  let m, mh, i, j, k, irev, wr, wi, xr, xi;
+  let cos = Math.cos;
+  let sin = Math.sin;
 
-    for(i = 0; i < n; i++) {
-        ar[i] = input[i];
+  for (i = 0; i < n; i++) {
+    ar[i] = input[i];
+  }
+
+  // scrambler
+  i = 0;
+  for (j = 1; j < n - 1; ++j) {
+    for (k = n >> 1; k > (i ^= k); k >>= 1);
+    if (j < i) {
+      xr = ar[j];
+      xi = ai[j];
+      ar[j] = ar[i];
+      ai[j] = ai[i];
+      ar[i] = xr;
+      ai[i] = xi;
     }
-
-    // scrambler
-    i = 0;
-    for(j = 1; j < n - 1; ++j) {
-        for(k = n>>1; k>(i ^= k); k>>=1);
-        if(j<i) {
-            xr = ar[j];
-            xi = ai[j];
-            ar[j] = ar[i];
-            ai[j] = ai[i];
-            ar[i] = xr;
-            ai[i] = xi;
-        }
+  }
+  for (mh = 1; (m = mh << 1) <= n; mh = m) {
+    irev = 0;
+    for (i = 0; i < n; i += m) {
+      wr = cos(theta * irev);
+      wi = sin(theta * irev);
+      for (k = n >> 2; k > (irev ^= k); k >>= 1);
+      for (j = i; j < mh + i; ++j) {
+        k = j + mh;
+        xr = ar[j] - ar[k];
+        xi = ai[j] - ai[k];
+        ar[j] += ar[k];
+        ai[j] += ai[k];
+        ar[k] = wr * xr - wi * xi;
+        ai[k] = wr * xi + wi * xr;
+      }
     }
-    for(mh = 1; (m = mh << 1) <= n; mh = m) {
-        irev = 0;
-        for(i=0; i<n; i+=m) {
-            wr = cos(theta * irev);
-            wi = sin(theta * irev);
-            for(k=n>>2; k > (irev ^= k); k>>=1);
-            for(j=i; j<mh+i; ++j) {
-                k = j + mh;
-                xr = ar[j] - ar[k];
-                xi = ai[j] - ai[k];
-                ar[j] += ar[k];
-                ai[j] += ai[k];
-                ar[k] = wr * xr - wi * xi;
-                ai[k] = wr * xi + wi * xr;
-            }
-        }
-    }
+  }
 
-    // remove DC offset
-    ar[0] = 0;
-    ar[0] = 0;
+  // remove DC offset
+  ar[0] = 0;
+  ar[0] = 0;
 
-    return [ar, ai];
+  return [ar, ai];
 }
 
 function callStart() {
@@ -106,12 +105,9 @@ function callStop() {
   isPlay = true;
 }
 
-
-
 document.addEventListener(tapStart, () => {
-  (isPlay) ? callStart() : callStop();
+  isPlay ? callStart() : callStop();
 });
-
 
 //osc.stop(actx.currentTime + 3.0);
 
@@ -127,10 +123,6 @@ function play() {
 */
 
 //document.addEventListener(eventName, play);
-
-
-
-
 
 /*
 const createWave = (func, duration) => {
@@ -155,7 +147,6 @@ let func = (t) => Math.sin(2 * Math.PI * 440 * t);
 const buffer = createWave(func, 10);
 playSound(buffer);
 */
-
 
 /*
 // 簡単なsine波

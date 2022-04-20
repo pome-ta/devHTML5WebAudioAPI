@@ -4,8 +4,6 @@
 
 // AudioContextのサンプルレートで2秒間の空のステレオバッファ生成
 
-
-
 //console.log(actx.sampleRate);  // 44100
 
 //document.addEventListener(eventName, callSineWava);
@@ -22,7 +20,7 @@ function callWhiteNoise(e) {
       nowBuffering[i] = Math.random() * 2 - 1;
     }
   }
-  
+
   // AudioBufferSourceNodeを得る
   // これはAudioBufferを再生するときに使うAudioNode
   let source = actx.createBufferSource();
@@ -35,21 +33,24 @@ function callWhiteNoise(e) {
   source.start();
 }
 
-
 // https://teropa.info/blog/2016/08/04/sine-waves.html
 const REAL_TIME_FREQUENCY = 440.0;
 const ANGULAR_FREQUENCY = REAL_TIME_FREQUENCY * 2 * Math.PI;
 
 const geneSineWave = (sampleNumber) => {
-  const sampleTime = sampleNumber / 44100
+  const sampleTime = sampleNumber / 44100;
   const sampleAngle = sampleTime * ANGULAR_FREQUENCY;
   return Math.sin(sampleAngle);
-}
+};
 
 function callSineWava(e) {
-const channels = 2;
-const frameCount = this.audioContext.sampleRate * 0.1;
-const myArrayBuffer = this.audioContext.createBuffer(channels, frameCount, this.audioContext.sampleRate);
+  const channels = 2;
+  const frameCount = this.audioContext.sampleRate * 0.1;
+  const myArrayBuffer = this.audioContext.createBuffer(
+    channels,
+    frameCount,
+    this.audioContext.sampleRate
+  );
 
   for (let channel = 0; channel < channels; channel++) {
     // 実際のデータの配列を得る
@@ -58,7 +59,7 @@ const myArrayBuffer = this.audioContext.createBuffer(channels, frameCount, this.
       nowBuffering[i] = geneSineWave(i);
     }
   }
-  
+
   // AudioBufferSourceNodeを得る
   // これはAudioBufferを再生するときに使うAudioNode
   const source = this.audioContext.createBufferSource();
@@ -71,4 +72,4 @@ const myArrayBuffer = this.audioContext.createBuffer(channels, frameCount, this.
   source.start();
 }
 
-export {callSineWava};
+export { callSineWava };
